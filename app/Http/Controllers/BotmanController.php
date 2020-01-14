@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Storage;
 class BotmanController extends Controller
 {
     private $config;
+    private $keyActive;
 
     public function __construct()
     {
@@ -63,11 +64,16 @@ class BotmanController extends Controller
             return $key == $id;
         })->first();
 
+        $this->keyActive = $id;
+
         $this->config = [
             'facebook' => [
                 'token' => $conf->facebook->token,
                 'app_secret' => $conf->facebook->app_secret,
                 'verification' => $conf->facebook->verification,
+                'whitelisted_domains' => [
+                    'https://deplaza.id',
+                ],
             ]
         ];
 
@@ -79,6 +85,7 @@ class BotmanController extends Controller
         $botman = BotManFactory::create($this->config, new SymfonyCache($adapter));
 
         // Give the bot something to listen for.
+        // START CHAT
         $botman->hears('GET_STARTED', function (BotMan $bot) {
             $bot->reply('Hello ada yang bisa kami bantu?.');
             $bot->reply(
@@ -86,158 +93,83 @@ class BotmanController extends Controller
                     ->addButton(
                         ElementButton::create('Produk rekomendasi')
                             ->type('postback')
-                            ->payload('recomendation')
+                            ->payload('RECOMENDATION')
                     )
                     ->addButton(
                         ElementButton::create('Bicara dengan agen')
                             ->type('postback')
-                            ->payload('talk-to-agen')
+                            ->payload('TALK_AGENT')
                     )
             );
         });
 
-        $botman->hears('hello', function (BotMan $bot) {
-            $bot->reply('Hello ada yang bisa kami bantu?.');
+        $botman->hears('hello', function ($bot) {
+            $bot->reply('ada kak tapi stok kami terbatas karena kami sedang promo discount');
+            $bot->reply('order sebelum kehabisan,');
+            $bot->reply('Pembayaran bisa di tempat pas barang datang');
+            $bot->reply('Silahkan isi nama, no, hp dan alamat lengkap pengiriman');
+        });
+
+        $botman->hears('apakah masih ada?', function ($bot) {
+            $bot->reply('ada kak tapi stok kami terbatas karena kami sedang promo discount');
+            $bot->reply('order sebelum kehabisan,');
+            $bot->reply('Pembayaran bisa di tempat pas barang datang');
+            $bot->reply('Silahkan isi nama, no, hp dan alamat lengkap pengiriman');
+        });
+
+        $botman->hears('apakah ready?', function ($bot) {
+            $bot->reply('ada kak tapi stok kami terbatas karena kami sedang promo discount');
+            $bot->reply('order sebelum kehabisan,');
+            $bot->reply('Pembayaran bisa di tempat pas barang datang');
+            $bot->reply('Silahkan isi nama, no, hp dan alamat lengkap pengiriman');
+        });
+
+        $botman->hears('apakah ini COD?', function ($bot) {
+            $bot->reply('ada kak tapi stok kami terbatas karena kami sedang promo discount');
+            $bot->reply('order sebelum kehabisan,');
+            $bot->reply('Pembayaran bisa di tempat pas barang datang');
+            $bot->reply('Silahkan isi nama, no, hp dan alamat lengkap pengiriman');
+        });
+
+        $botman->hears('TALK_AGENT', function (BotMan $bot) {
             $bot->reply(
-                ButtonTemplate::create('Silahkan gunakan menu ini')
+                ButtonTemplate::create('Kamu akan bertanya tentang apa?')
                     ->addButton(
-                        ElementButton::create('Produk rekomendasi')
+                        ElementButton::create('Pemesanan')
                             ->type('postback')
-                            ->payload('recomendation')
+                            ->payload('ORDER')
                     )
                     ->addButton(
-                        ElementButton::create('Bicara dengan agen')
+                        ElementButton::create('Pembayaran')
                             ->type('postback')
-                            ->payload('talk-to-agen')
+                            ->payload('PAYMENT')
                     )
+                    ->addButton(
+                        ElementButton::create('Lainnya')
+                            ->type('postback')
+                            ->payload('TALK_AGENT')
+                    )
+
             );
         });
-
-        $botman->hears('tellmemore', function (BotMan $bot) {
-            $bot->reply(
-                GenericTemplate::create()
-                    ->addImageAspectRatio(GenericTemplate::RATIO_SQUARE)
-                    ->addElements([
-                        Element::create('BotMan Documentation')
-                            ->subtitle('All about BotMan')
-                            ->image('http://botman.io/img/botman-body.png')
-                            ->addButton(
-                                ElementButton::create('visit')
-                                    ->url('http://botman.io')
-                            )
-                            ->addButton(
-                                ElementButton::create('tell me more')
-                                    ->payload('tellmemore2')
-                                    ->type('postback')
-                            ),
-                        Element::create('BotMan Laravel Starter')
-                            ->subtitle('This is the best way to start with Laravel and BotMan')
-                            ->image('http://botman.io/img/botman-body.png')
-                            ->addButton(
-                                ElementButton::create('visit')
-                                    ->url('https://github.com/mpociot/botman-laravel-starter')
-                            ),
-                    ])
-            );
-        });
-
-        $botman->hears('tellmemore2', function (BotMan $bot) {
-            /* deprecated
-            $bot->reply(
-                ListTemplate::create()
-                    ->useCompactView()
-                    ->addGlobalButton(
-                        ElementButton::create('view more')
-                            ->url('http://test.at')
-                    )
-                    ->addElement(
-                        Element::create('BotMan Documentation')
-                            ->subtitle('All about BotMan')
-                            ->image('http://botman.io/img/botman-body.png')
-                            ->addButton(
-                                ElementButton::create('tell me more')
-                                    ->payload('tellmemore')
-                                    ->type('postback')
-                            )
-                    )
-                    ->addElement(
-                        Element::create('BotMan Laravel Starter')
-                            ->subtitle('This is the best way to start with Laravel and BotMan')
-                            ->image('http://botman.io/img/botman-body.png')
-                            ->addButton(
-                                ElementButton::create('visit')
-                                    ->url('https://github.com/mpociot/botman-laravel-starter')
-                            )
-                    )
-            );
-            */
-            $bot->reply(
-                ReceiptTemplate::create()
-                    ->recipientName('Christoph Rumpel')
-                    ->merchantName('BotMan GmbH')
-                    ->orderNumber('342343434343')
-                    ->timestamp('1428444852')
-                    ->orderUrl('http://test.at')
-                    ->currency('USD')
-                    ->paymentMethod('VISA')
-                    ->addElement(
-                        ReceiptElement::create('T-Shirt Small')
-                            ->price(15.99)
-                            ->image('http://botman.io/img/botman-body.png')
-                    )
-                    ->addElement(
-                        ReceiptElement::create('Sticker')
-                            ->price(2.99)
-                            ->image('http://botman.io/img/botman-body.png')
-                    )
-                    ->addAddress(
-                        ReceiptAddress::create()
-                            ->street1('Watsonstreet 12')
-                            ->city('Bot City')
-                            ->postalCode(100000)
-                            ->state('Washington AI')
-                            ->country('Botmanland')
-                    )
-                    ->addSummary(
-                        ReceiptSummary::create()
-                            ->subtotal(18.98)
-                            ->shippingCost(10)
-                            ->totalTax(15)
-                            ->totalCost(23.98)
-                    )
-                    ->addAdjustment(
-                        ReceiptAdjustment::create('Laravel Bonus')
-                            ->amount(5)
-                    )
-            );
-        });
-
         // Give the bot something to listen for.
-        $botman->hears('recomendation', function (BotMan $bot) {
+        $botman->hears('RECOMENDATION', function (BotMan $bot) {
+            // TO DO GET PRODUCT RECOMENDATION
+
             $bot->reply(
                 GenericTemplate::create()
                     ->addImageAspectRatio(GenericTemplate::RATIO_SQUARE)
                     ->addElements([
-                        Element::create('BotMan Documentation')
-                            ->subtitle('All about BotMan')
+                        Element::create('Produk Deplaza')
+                            ->subtitle('Deskripsi produk')
                             ->image('https://api.deplaza.id/photo/plugin/shop/2019/1553139887_3410-org.png')
                             ->addButton(
-                                ElementButton::create('Tampilkan lainnya')
-                                    ->payload('recomendation')
-                                    ->type('postback')
-                            )
-                            ->addButton(
-                                ElementButton::create('Tampilkan lainnya')
-                                    ->payload('recomendation')
-                                    ->type('postback')
-                            ),
-                        Element::create('BotMan Documentation')
-                            ->subtitle('All about BotMan')
-                            ->image('https://api.deplaza.id/photo/plugin/shop/2019/1553139887_3410-org.png')
-                            ->addButton(
-                                ElementButton::create('Tampilkan lainnya')
-                                    ->payload('recomendation')
-                                    ->type('postback')
+                                ElementButton::create('Beli Produk Ini')
+                                    ->payload('buythis')
+                                    ->type('web_url')
+                                    ->url('https://deplaza.id')
+                                    ->enableExtensions()
+                                // ->heightRatio()
                             )
                             ->addButton(
                                 ElementButton::create('Tampilkan lainnya')
