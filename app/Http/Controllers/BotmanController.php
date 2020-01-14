@@ -28,6 +28,8 @@ use BotMan\BotMan\Messages\Conversations\Conversation;
 use BotMan\BotMan\Cache\SymfonyCache;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
+use Illuminate\Support\Facades\Storage;
+
 class BotmanController extends Controller
 {
     private $config;
@@ -53,58 +55,61 @@ class BotmanController extends Controller
      */
     public function index(Request $request, $id = null)
     {
-        if ($id == 1) {
-            $this->config = [
-                'facebook' => [
-                    'token' => 'EAAGrz5U7PhUBAPMw8TqZAjjgmZAAW4rNCx8eqxrbUcRAHEScDVUIA7blVSX9rIFqk18ssFlokmiysOgFpW7wfOlLwtOgp8ql875EV4isKDNGB2gN0bAqWzf6w9Aa6CNe3ofnrNZBbxTSTLZCJw22IzXZCXD6qCNZAni6oOSzK4UZCoKfe0bBT4l',
-                    'app_secret' => 'cf0fbfa8329882035a89d5b5243ed287',
-                    'verification' => 'tesdeplaza1',
-                ]
-            ];
-        } elseif ($id == 2) {
-            $this->config = [
-                'facebook' => [
-                    'token' => 'EAAJG3TTxzqMBAAZBd2yHRkg7ZChZCQNuPKq6UZBrwgnSTyZAvsSaKcTmD9wZAVur8ZAUjHVuZBIJ9O6grUNmycmVXf7aSGZBcZALrNmsa08b1AeiphvJZBNSwz7xAs1mwPQ2X0gzwrHlKM5V6ZCr4VYlsFhJmHFtFd3SZC1KEMizSPfGwEr2k16m3jyez',
-                    'app_secret' => 'cf4b0e4b62ed832717a1d7747fe8a1ee',
-                    'verification' => 'desdeplaza2',
-                ]
-            ];
-        } elseif ($id == 3) {
-            $this->config = [
-                'facebook' => [
-                    'token' => 'EAAkLE9cn7SEBANHYlN0TTRAmqULFR6aoeW9EhqZCrSZAYPJoc1hpwLzTW7dEBihrHWMTHu9T5NNoKBIBMAVxIuBUqJZCULx8qviqxO22bpPBelJkdltyJ9m84aeoqZC1vsZCMXY1Y8EqHjzLCWXIwZCg0NOpJqoVjD0oAlVi45pOzNKPq4kiEC',
-                    'app_secret' => '19f82978502c370bc3238d6ac2da889c',
-                    'verification' => '987654321cba',
-                ]
-            ];
-        }
+        $file = Storage::disk('local')->get('data/pageToken.json');
+
+        $collectData = collect(json_decode($file));
+
+        $conf = $collectData->filter(function ($item, $key) use ($id) {
+            return $key == $id;
+        })->first();
+
+        $this->config = [
+            'facebook' => [
+                'token' => $conf->facebook->token,
+                'app_secret' => $conf->facebook->app_secret,
+                'verification' => $conf->facebook->verification,
+            ]
+        ];
+
         // Load the driver(s) you want to use
         DriverManager::loadDriver(\BotMan\Drivers\Facebook\FacebookDriver::class);
 
         // Create an instance
-        // $botman = BotManFactory::create($this->config);
-        // $botman = BotManFactory::create($this->config, new RedisCache('127.0.0.1', 6379));
         $adapter = new FilesystemAdapter();
         $botman = BotManFactory::create($this->config, new SymfonyCache($adapter));
 
         // Give the bot something to listen for.
+        $botman->hears('GET_STARTED', function (BotMan $bot) {
+            $bot->reply('Hello ada yang bisa kami bantu?.');
+            $bot->reply(
+                ButtonTemplate::create('Silahkan gunakan menu ini')
+                    ->addButton(
+                        ElementButton::create('Produk rekomendasi')
+                            ->type('postback')
+                            ->payload('recomendation')
+                    )
+                    ->addButton(
+                        ElementButton::create('Bicara dengan agen')
+                            ->type('postback')
+                            ->payload('talk-to-agen')
+                    )
+            );
+        });
+
         $botman->hears('hello', function (BotMan $bot) {
             $bot->reply('Hello ada yang bisa kami bantu?.');
             $bot->reply(
                 ButtonTemplate::create('Silahkan gunakan menu ini')
                     ->addButton(
-                        ElementButton::create('Tell me more')
+                        ElementButton::create('Produk rekomendasi')
                             ->type('postback')
-                            ->payload('tellmemore')
+                            ->payload('recomendation')
                     )
                     ->addButton(
-                        ElementButton::create('Show me the docs')
-                            ->url('http://botman.io/')
+                        ElementButton::create('Bicara dengan agen')
+                            ->type('postback')
+                            ->payload('talk-to-agen')
                     )
-                    ->addButtons([
-                        Button::create('Mencari produk')->value('joke'),
-                        Button::create('Bicara dengan agen')->value('quote'),
-                    ])
             );
         });
 
@@ -203,6 +208,59 @@ class BotmanController extends Controller
                     ->addAdjustment(
                         ReceiptAdjustment::create('Laravel Bonus')
                             ->amount(5)
+                    )
+            );
+        });
+
+        // Give the bot something to listen for.
+        $botman->hears('recomendation', function (BotMan $bot) {
+            $bot->reply(
+                GenericTemplate::create()
+                    ->addImageAspectRatio(GenericTemplate::RATIO_SQUARE)
+                    ->addElements([
+                        Element::create('BotMan Documentation')
+                            ->subtitle('All about BotMan')
+                            ->image('https://api.deplaza.id/photo/plugin/shop/2019/1553139887_3410-org.png')
+                            ->addButton(
+                                ElementButton::create('Tampilkan lainnya')
+                                    ->payload('recomendation')
+                                    ->type('postback')
+                            )
+                            ->addButton(
+                                ElementButton::create('Tampilkan lainnya')
+                                    ->payload('recomendation')
+                                    ->type('postback')
+                            ),
+                        Element::create('BotMan Documentation')
+                            ->subtitle('All about BotMan')
+                            ->image('https://api.deplaza.id/photo/plugin/shop/2019/1553139887_3410-org.png')
+                            ->addButton(
+                                ElementButton::create('Tampilkan lainnya')
+                                    ->payload('recomendation')
+                                    ->type('postback')
+                            )
+                            ->addButton(
+                                ElementButton::create('Tampilkan lainnya')
+                                    ->payload('recomendation')
+                                    ->type('postback')
+                            ),
+                    ])
+            );
+        });
+
+        $botman->fallback(function ($bot) {
+            $bot->reply('Maaf, ...');
+            $bot->reply(
+                ButtonTemplate::create('Silahkan gunakan menu ini')
+                    ->addButton(
+                        ElementButton::create('Produk rekomendasi')
+                            ->type('postback')
+                            ->payload('recomendation')
+                    )
+                    ->addButton(
+                        ElementButton::create('Bicara dengan agen')
+                            ->type('postback')
+                            ->payload('talk-to-agen')
                     )
             );
         });
