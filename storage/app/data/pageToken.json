@@ -1,0 +1,16 @@
+{
+    "devDeplaza": {
+        "facebook": {
+            "token": "EAAGrz5U7PhUBAPMw8TqZAjjgmZAAW4rNCx8eqxrbUcRAHEScDVUIA7blVSX9rIFqk18ssFlokmiysOgFpW7wfOlLwtOgp8ql875EV4isKDNGB2gN0bAqWzf6w9Aa6CNe3ofnrNZBbxTSTLZCJw22IzXZCXD6qCNZAni6oOSzK4UZCoKfe0bBT4l",
+            "app_secret": "cf0fbfa8329882035a89d5b5243ed287",
+            "verification": "tesdeplaza1"
+        }
+    },
+    "devDeplaza2": {
+        "facebook": {
+            "token": "EAAJG3TTxzqMBAAZBd2yHRkg7ZChZCQNuPKq6UZBrwgnSTyZAvsSaKcTmD9wZAVur8ZAUjHVuZBIJ9O6grUNmycmVXf7aSGZBcZALrNmsa08b1AeiphvJZBNSwz7xAs1mwPQ2X0gzwrHlKM5V6ZCr4VYlsFhJmHFtFd3SZC1KEMizSPfGwEr2k16m3jyez",
+            "app_secret": "cf4b0e4b62ed832717a1d7747fe8a1ee",
+            "verification": "desdeplaza2"
+        }
+    }
+}
