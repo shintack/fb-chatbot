@@ -14,7 +14,9 @@
 use App\Http\Controllers\BotmanController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'message' => 'chatbot'
+    ]);
 });
 
 Route::match(['get', 'post'], '/botman/{id}', 'BotmanController@index');
